@@ -127,10 +127,23 @@ class XmlParser:
                 return
             vlrProd = cls._to_cents(vlrProd)
 
+            vNF = cls.get_tag_text(total_node, "vNF")
+            if vNF == "":
+                return
+            vNF = cls._to_cents(vNF)
+
             dEmi = cls.get_tag_text(ide_node, "dhEmi")
             if dEmi == "":
                 return
             dEmi = cls._format_date(dEmi)
+
+            cnpjEmit = cls.get_tag_text(cls._find_node(root, "emit"), "CNPJ")
+            if cnpjEmit == "":
+                return
+
+            cnpjDest = cls.get_tag_text(cls._find_node(root, "dest"), "CNPJ")
+            if (chNF[20:22] == "65" and cnpjDest == ""):
+                cnpjDest = "--Consumidor--"
 
             bcICMS = cls.get_tag_text(total_node, "vBC")
             if bcICMS == "":
@@ -171,8 +184,11 @@ class XmlParser:
                 (
                     chNF,
                     cfop,
-                    vlrProd,
                     dEmi,
+                    cnpjEmit,
+                    cnpjDest,
+                    vlrProd,
+                    vNF,
                     bcICMS,
                     vlrICMS,
                     bcST,

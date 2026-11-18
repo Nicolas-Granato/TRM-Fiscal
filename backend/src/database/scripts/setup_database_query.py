@@ -2,8 +2,11 @@ SETUP_DATABASE = """
 CREATE TEMP TABLE Xml (
     chNF VARCHAR(44) PRIMARY KEY,
     CFOP VARCHAR(4),
-    vlrProd INTEGER,
     dEmi DATE,
+    cnpjEmit VARCHAR(14),
+    cnpjDest VARCHAR(14),
+    vNF INTEGER,
+    vlrProd INTEGER,
     bcICMS INTEGER,
     vlrICMS INTEGER,
     bcST INTEGER,
