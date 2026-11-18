@@ -1,5 +1,6 @@
 import re
 import xml.etree.ElementTree as ET
+from pathlib import Path
 from typing import Optional
 
 
@@ -59,6 +60,42 @@ class XmlParser:
     def _format_date(date_str: str) -> str:
         date = re.sub(r"T.*", "", date_str)
         return date
+
+    @staticmethod
+    def get_company_info(
+        xml_bytes: bytes,
+        zip_filepath: str,
+    ) -> tuple[Optional[str], Optional[str]]:
+        try:
+            root = ET.fromstring(xml_bytes)
+        except (ET.ParseError, ValueError, TypeError):
+            return None, None
+
+        infNFe_node = XmlParser._find_node(root, "infNFe")
+        if infNFe_node is None:
+            return None, None
+
+        folders = "/".join(p.lower() for p in Path(zip_filepath).parts[:-1])
+
+        if "nfce" in folders or "nfe venda" in folders or "nf venda" in folders:
+            target_tag = "emit"
+        elif "nfe compra" in folders:
+            target_tag = "dest"
+        else:
+            return None, None
+
+        target_node = XmlParser._find_node(infNFe_node, target_tag)
+        if target_node is None:
+            return None, None
+
+        company_name = XmlParser.get_tag_text(target_node, "xNome") or None
+        company_doc = (
+            XmlParser.get_tag_text(target_node, "CNPJ")
+            or XmlParser.get_tag_text(target_node, "CPF")
+            or None
+        )
+
+        return company_name, company_doc
 
     @classmethod
     def parse_xml(
@@ -142,7 +179,7 @@ class XmlParser:
                     vlrST,
                     vlrIPI,
                     outras,
-                    desconto
+                    desconto,
                 )
             )
 
