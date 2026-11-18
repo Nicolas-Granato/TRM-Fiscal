@@ -4,21 +4,14 @@ from typing import Any
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 
-from src.database.session_manager.session_manager import DuckDBSession as SessionManager
-
 
 class BaseReport(ABC):
-    """
-    Classe base abstrata para todos os relatórios PDF do TRM Fiscal.
-    """
+    REPORTS_DIR = Path(__file__).resolve().parent.parent
 
-    REPORTS_DIR = Path(__file__).resolve().parent
-    TEMPLATES_DIR = REPORTS_DIR / "templates"
-
-    def __init__(self, session_manager: SessionManager):
+    def __init__(self, session_manager: Any):
         self.session_manager = session_manager
         self.env = Environment(
-            loader=FileSystemLoader(str(self.TEMPLATES_DIR)),
+            loader=FileSystemLoader(str(self.REPORTS_DIR)),
             autoescape=True,
         )
         self.env.filters["brl"] = self._format_brl
