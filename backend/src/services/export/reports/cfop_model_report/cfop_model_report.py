@@ -1,18 +1,14 @@
 from collections import defaultdict
 from typing import Any
 
-from src.services.export.reports.base_report.base_report import BaseReport
-from src.database.scripts.reports_queries import CFOP_MODEL_REPORT_QUERY
+from backend.src.services.export.reports.base_report.base_report import BaseReport
+from backend.src.database.scripts.reports_queries import CFOP_MODEL_REPORT_QUERY
 
 
 class CfopModelReport(BaseReport):
-    """
-    Gera o Relatório de Apuração de Saídas por CFOP e Modelo (NF-e / NFC-e).
-    """
-
     @property
     def template_name(self) -> str:
-        return "cfop_model_report.html"
+        return "cfop_model_report/cfop_model_report.html"
 
     @property
     def report_filename(self) -> str:

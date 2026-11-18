@@ -1,18 +1,14 @@
 from typing import Any
 
-from src.services.export.reports.base_report.base_report import BaseReport
-from src.database.scripts.reports_queries import PURCHASE_REPORT_QUERY
+from backend.src.services.export.reports.base_report.base_report import BaseReport
+from backend.src.database.scripts.reports_queries import PURCHASE_REPORT_QUERY
 
 
 class PurchaseReport(BaseReport):
-    """
-    Gera o Relatório de Notas Fiscais de Compras / Entradas
-    utilizando a query definida em database/scripts/reports_queries.py.
-    """
-
+    
     @property
     def template_name(self) -> str:
-        return "purchase_report.html"
+        return "purchase_report/purchase_report.html"
 
     @property
     def report_filename(self) -> str:
@@ -23,7 +19,7 @@ class PurchaseReport(BaseReport):
         if not company_cnpj:
             raise ValueError("O parâmetro 'company_cnpj' é obrigatório para o PurchaseReport.")
 
-        rows = self.session_manager.execute_sql(PURCHASE_REPORT_QUERY, [company_cnpj])
+        rows = self.session_manager.execute_sql(PURCHASE_REPORT_QUERY, [company_cnpj, company_cnpj])
 
         notas = []
         total_vlr_prod = 0.0

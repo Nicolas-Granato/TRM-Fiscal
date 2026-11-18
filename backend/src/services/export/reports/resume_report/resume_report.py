@@ -1,18 +1,14 @@
 from typing import Any
 
-from src.services.export.reports.base_report.base_report import BaseReport
-from src.database.scripts.reports_queries import RESUME_REPORT_QUERY
+from backend.src.services.export.reports.base_report.base_report import BaseReport
+from backend.src.database.scripts.reports_queries import RESUME_REPORT_QUERY
 
 
 class ResumeReport(BaseReport):
-    """
-    Gera o Relatório Resumo Fiscal e Financeiro (Consolidado por Modelo / Operação)
-    utilizando a query definida em database/scripts/reports_queries.py.
-    """
-
+    
     @property
     def template_name(self) -> str:
-        return "resume_report.html"
+        return "resume_report/resume_report.html"
 
     @property
     def report_filename(self) -> str:

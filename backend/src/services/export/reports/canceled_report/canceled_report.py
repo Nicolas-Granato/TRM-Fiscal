@@ -1,13 +1,13 @@
 from typing import Any
-from src.services.export.reports.base_report import BaseReport
 
-from src.database.scripts.reports_queries import CANCELED_REPORT_QUERY
+from backend.src.services.export.reports.base_report.base_report import BaseReport
+from backend.src.database.scripts.reports_queries import CANCELED_REPORT_QUERY
 
 
 class CanceledReport(BaseReport):
     @property
     def template_name(self) -> str:
-        return "canceled_report.html"
+        return "canceled_report/canceled_report.html"
 
     @property
     def report_filename(self) -> str:
