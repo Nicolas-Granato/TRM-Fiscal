@@ -1,13 +1,11 @@
+from typing import Any, Optional, Sequence
 import duckdb
-from typing import Optional
 
 from backend.src.database.scripts.setup_database_query import SETUP_DATABASE
 
-class DuckDBSession:
 
-    def __init__(
-        self
-    ):
+class DuckDBSession:
+    def __init__(self):
         self._conn: Optional[duckdb.DuckDBPyConnection] = None
 
     def _close_connection(self) -> None:
@@ -23,29 +21,28 @@ class DuckDBSession:
         try:
             self._conn = duckdb.connect(":memory:")
             self._conn.execute(SETUP_DATABASE)
-
         except (duckdb.ParserException, duckdb.Error) as e:
             self._close_connection()
             raise RuntimeError(f"Erro ao carregar o schema do banco de dados: {e}") from e
-
         except Exception as e:
             self._close_connection()
             raise RuntimeError(f"Erro ao inicializar o banco de dados: {e}") from e
 
-    def execute_sql(self, sql: str, parameters: Optional[tuple] = None) -> duckdb.DuckDBPyConnection:
+    def execute_sql(self, sql: str, parameters: Optional[Sequence[Any]] = None) -> list[tuple]:
         if not self._conn:
             raise RuntimeError("Conexão com o DuckDB não está ativa.")
         try:
-            return self._conn.execute(sql, parameters)
+            cursor = self._conn.execute(sql, parameters) if parameters is not None else self._conn.execute(sql)
+            return cursor.fetchall()
         except Exception as e:
             self._close_connection()
             raise RuntimeError(f"Erro ao executar a query no banco de dados: {e}") from e
 
-    def executemany_sql(self, sql: str, parameters: list[tuple]) -> duckdb.DuckDBPyConnection:
+    def executemany_sql(self, sql: str, parameters: list[tuple]) -> None:
         if not self._conn:
             raise RuntimeError("Conexão com o DuckDB não está ativa.")
         try:
-            return self._conn.executemany(sql, parameters)
+            self._conn.executemany(sql, parameters)
         except Exception as e:
             self._close_connection()
             raise RuntimeError(f"Erro ao executar as queries no banco de dados: {e}") from e
