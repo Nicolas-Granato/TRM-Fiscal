@@ -1,0 +1,71 @@
+{% extends "base_report.html" %}
+
+{% block extra_styles %}
+<style>
+  .summary-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #EBF1F6;
+    border-left: 4px solid #2980B9;
+    padding: 10px 14px;
+    margin-bottom: 16px;
+    font-size: 9.5pt;
+    color: #13293D;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 28px 16px;
+    color: #475569;
+    background-color: #F8FAFC;
+    border: 1px dashed #CBD5E1;
+    border-radius: 4px;
+    font-size: 10pt;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <div class="summary-bar">
+    <span><strong>Documentos Cancelados no Período:</strong> {{ qtd_notas }}</span>
+    <span><strong>Valor Total Cancelado:</strong> {{ total_vlrTotal | brl }}</span>
+  </div>
+
+  {% if notas %}
+  <table class="fiscal-table">
+    <thead>
+      <tr>
+        <th class="center">Modelo</th>
+        <th class="center">Série</th>
+        <th class="center">Número NF</th>
+        <th class="right">Vlr. Produtos</th>
+        <th class="right">Vlr. Total NF</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for nota in notas %}
+      <tr>
+        <td class="center">
+          {{ nota.mod }} {% if nota.mod == '55' %}(NF-e){% elif nota.mod == '65' %}(NFC-e){% endif %}
+        </td>
+        <td class="center">{{ nota.serie }}</td>
+        <td class="center">{{ nota.nNF }}</td>
+        <td class="right">{{ nota.vlrProd | brl }}</td>
+        <td class="right">{{ nota.vlrTotal | brl }}</td>
+      </tr>
+      {% endfor %}
+
+      <tr class="total-row">
+        <td colspan="3">TOTAL GERAL ({{ qtd_notas }} documento{{ 's' if qtd_notas != 1 else '' }})</td>
+        <td class="right">{{ total_vlrProd | brl }}</td>
+        <td class="right">{{ total_vlrTotal | brl }}</td>
+      </tr>
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    Nenhuma nota fiscal cancelada foi encontrada para o período informado.
+  </div>
+  {% endif %}
+{% endblock %}
