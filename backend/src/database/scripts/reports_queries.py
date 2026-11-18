@@ -26,14 +26,16 @@ WHERE Cancelada = TRUE;
 RESUME_REPORT_QUERY = """
 SELECT
     SUBSTRING(chNF, 21, 2) AS mod,
-    SUBSTRING(chNF, 26, 9) AS nNF,
-    dEmi,
-    chNF,
-    COALESCE(vNF, 0) AS vNF
+    COUNT(*) AS qtd,
+    COALESCE(SUM(vlrProd), 0) AS vlrProd,
+    COALESCE(SUM(vNF), 0) AS vNF,
+    COALESCE(SUM(bcICMS), 0) AS bcICMS,
+    COALESCE(SUM(vlrICMS), 0) AS vlrICMS
 FROM Xml
 WHERE cnpjEmit = ?
   AND Cancelada = FALSE
-ORDER BY dEmi, mod, nNF;
+GROUP BY SUBSTRING(chNF, 21, 2)
+ORDER BY mod;
 """
 
 TOTAL_RESUME = """
@@ -79,23 +81,18 @@ WHERE cnpjEmit = ?
 
 PURCHASE_REPORT_QUERY = """
 SELECT
+    SUBSTRING(chNF, 21, 2) AS mod,
+    SUBSTRING(chNF, 23, 3) AS serie,
     SUBSTRING(chNF, 26, 9) AS nNF,
     dEmi,
-    cnpjEmit,
-    COALESCE(bcICMS, 0) AS bcICMS,
-    COALESCE(vlrICMS, 0) AS vlrICMS,
-    COALESCE(bcST, 0) AS bcST,
-    COALESCE(vlrST, 0) AS vlrST,
-    COALESCE(vlrIPI, 0) AS vlrIPI,
-    COALESCE(Outras, 0) AS Outras,
-    COALESCE(Desconto, 0) AS Desconto,
+    chNF,
     COALESCE(vlrProd, 0) AS vlrProd,
     COALESCE(vNF, 0) AS vNF
 FROM Xml
 WHERE cnpjEmit != ?
   AND cnpjDest = ?
   AND Cancelada = FALSE
-ORDER BY dEmi, nNF;
+ORDER BY dEmi, serie, nNF;
 """
 
 TOTAL_PURCHASE = """
