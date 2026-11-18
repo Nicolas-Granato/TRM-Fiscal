@@ -1,7 +1,7 @@
 import duckdb
 from typing import Optional
 
-from backend.src.database.scripts.setup_database import SETUP_DATABASE
+from backend.src.database.scripts.setup_database_query import SETUP_DATABASE
 
 class DuckDBSession:
 
