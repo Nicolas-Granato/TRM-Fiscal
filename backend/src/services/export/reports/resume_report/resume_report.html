@@ -1,0 +1,134 @@
+{% extends "base_report.html" %}
+
+{% block extra_styles %}
+<style>
+  .meta-cnpj {
+    background-color: #EBF1F6;
+    border-left: 4px solid #2980B9;
+    padding: 8px 14px;
+    margin-bottom: 18px;
+    font-size: 9.5pt;
+    color: #13293D;
+  }
+
+  .kpi-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 22px;
+    break-inside: avoid;
+  }
+
+  .kpi-card {
+    flex: 1;
+    background-color: #F8FAFC;
+    border: 1px solid #CBD5E1;
+    border-top: 3.5px solid #2980B9;
+    border-radius: 4px;
+    padding: 12px 14px;
+  }
+
+  .kpi-card.highlight {
+    background-color: #EBF1F6;
+    border-top-color: #13293D;
+  }
+
+  .kpi-label {
+    font-size: 8.5pt;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #475569;
+    margin-bottom: 4px;
+  }
+
+  .kpi-value {
+    font-size: 13pt;
+    font-weight: 800;
+    color: #13293D;
+  }
+
+  .section-title {
+    font-size: 11pt;
+    font-weight: 700;
+    color: #13293D;
+    margin: 0 0 8px 0;
+    padding-bottom: 4px;
+    border-bottom: 1.5px solid #CBD5E1;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 28px 16px;
+    color: #475569;
+    background-color: #F8FAFC;
+    border: 1px dashed #CBD5E1;
+    border-radius: 4px;
+    font-size: 10pt;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <div class="meta-cnpj">
+    <strong>CNPJ Apurado:</strong> {{ company_cnpj }}
+  </div>
+
+  {% if resumo_itens %}
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Documentos Emitidos</div>
+        <div class="kpi-value">{{ total_qtd }}</div>
+      </div>
+      <div class="kpi-card highlight">
+        <div class="kpi-label">Valor Total Contábil (vNF)</div>
+        <div class="kpi-value">{{ geral_vNF | brl }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total ICMS Destacado</div>
+        <div class="kpi-value">{{ geral_vlrICMS | brl }}</div>
+      </div>
+    </div>
+
+    <h2 class="section-title">Consolidado por Modelo de Documento Fiscal</h2>
+
+    <table class="fiscal-table">
+      <thead>
+        <tr>
+          <th class="center">Mod.</th>
+          <th>Descrição do Documento</th>
+          <th class="center">Qtd.</th>
+          <th class="right">Vlr. Produtos</th>
+          <th class="right">Vlr. Contábil (vNF)</th>
+          <th class="right">Base Cálc. ICMS</th>
+          <th class="right">Valor ICMS</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in resumo_itens %}
+        <tr>
+          <td class="center"><strong>{{ item.mod }}</strong></td>
+          <td>{{ item.descricao }}</td>
+          <td class="center">{{ item.qtd }}</td>
+          <td class="right">{{ item.vlrProd | brl }}</td>
+          <td class="right">{{ item.vNF | brl }}</td>
+          <td class="right">{{ item.bcICMS | brl }}</td>
+          <td class="right">{{ item.vlrICMS | brl }}</td>
+        </tr>
+        {% endfor %}
+
+        <tr class="total-row">
+          <td colspan="2">TOTAL GERAL</td>
+          <td class="center">{{ total_qtd }}</td>
+          <td class="right">{{ geral_vlrProd | brl }}</td>
+          <td class="right">{{ geral_vNF | brl }}</td>
+          <td class="right">{{ geral_bcICMS | brl }}</td>
+          <td class="right">{{ geral_vlrICMS | brl }}</td>
+        </tr>
+      </tbody>
+    </table>
+  {% else %}
+    <div class="empty-state">
+      Nenhum dado fiscal consolidado foi encontrado para o CNPJ {{ company_cnpj }} no período informado.
+    </div>
+  {% endif %}
+{% endblock %}
