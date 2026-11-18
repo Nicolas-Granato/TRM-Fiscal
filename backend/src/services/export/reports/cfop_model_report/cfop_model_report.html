@@ -1,0 +1,120 @@
+{% extends "base_report.html" %}
+
+{% block extra_styles %}
+<style>
+  .summary-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #EBF1F6;
+    border-left: 4px solid #2980B9;
+    padding: 10px 14px;
+    margin-bottom: 18px;
+    font-size: 9.5pt;
+    color: #13293D;
+  }
+
+  .model-section {
+    margin-bottom: 20px;
+    break-inside: avoid;
+  }
+
+  .model-header {
+    background-color: #2980B9;
+    color: #FFFFFF;
+    padding: 7px 10px;
+    font-size: 10pt;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+  }
+
+  table.fiscal-table {
+    margin-top: 0;
+  }
+
+  table.fiscal-table tr.subtotal-row td {
+    background-color: #E2E8F0;
+    font-weight: 700;
+    color: #13293D;
+    border-top: 1.5px solid #94A3B8;
+  }
+
+  .grand-total-box {
+    margin-top: 16px;
+    border-top: 2.5px solid #13293D;
+    break-inside: avoid;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 28px 16px;
+    color: #475569;
+    background-color: #F8FAFC;
+    border: 1px dashed #CBD5E1;
+    border-radius: 4px;
+    font-size: 10pt;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+  <div class="summary-bar">
+    <span><strong>CNPJ Emitente:</strong> {{ company_cnpj }}</span>
+    <span><strong>Total Geral Saídas:</strong> {{ geral_vNF | brl }}</span>
+  </div>
+
+  {% if modelos %}
+    {% for grupo in modelos %}
+    <div class="model-section">
+      <div class="model-header">
+        Modelo {{ grupo.mod }} — {{ grupo.descricao }}
+      </div>
+
+      <table class="fiscal-table">
+        <thead>
+          <tr>
+            <th class="center" style="width: 18%;">CFOP</th>
+            <th class="right" style="width: 28%;">Valor Contábil (vNF)</th>
+            <th class="right" style="width: 27%;">Base de Cálculo ICMS</th>
+            <th class="right" style="width: 27%;">Valor ICMS</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for item in grupo.itens %}
+          <tr>
+            <td class="center"><strong>{{ item.cfop }}</strong></td>
+            <td class="right">{{ item.vNF | brl }}</td>
+            <td class="right">{{ item.bcICMS | brl }}</td>
+            <td class="right">{{ item.vlrICMS | brl }}</td>
+          </tr>
+          {% endfor %}
+
+          <tr class="subtotal-row">
+            <td class="center">SUBTOTAL MOD. {{ grupo.mod }}</td>
+            <td class="right">{{ grupo.subtotal_vNF | brl }}</td>
+            <td class="right">{{ grupo.subtotal_bcICMS | brl }}</td>
+            <td class="right">{{ grupo.subtotal_vlrICMS | brl }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    {% endfor %}
+
+    <div class="grand-total-box">
+      <table class="fiscal-table">
+        <tbody>
+          <tr class="total-row">
+            <td style="width: 18%;">TOTAL GERAL</td>
+            <td class="right" style="width: 28%;">{{ geral_vNF | brl }}</td>
+            <td class="right" style="width: 27%;">{{ geral_bcICMS | brl }}</td>
+            <td class="right" style="width: 27%;">{{ geral_vlrICMS | brl }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="empty-state">
+      Nenhuma nota fiscal de saída autorizada foi encontrada para o CNPJ {{ company_cnpj }} no período informado.
+    </div>
+  {% endif %}
+{% endblock %}
