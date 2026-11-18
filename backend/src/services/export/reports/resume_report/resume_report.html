@@ -2,58 +2,66 @@
 
 {% block extra_styles %}
 <style>
-  .meta-cnpj {
+  .meta-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     background-color: #EBF1F6;
     border-left: 4px solid #2980B9;
-    padding: 8px 14px;
+    padding: 9px 14px;
     margin-bottom: 18px;
     font-size: 9.5pt;
     color: #13293D;
   }
 
-  .kpi-grid {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 22px;
-    break-inside: avoid;
+  .fiscal-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 9pt;
+    margin-bottom: 16px;
   }
 
-  .kpi-card {
-    flex: 1;
-    background-color: #F8FAFC;
-    border: 1px solid #CBD5E1;
-    border-top: 3.5px solid #2980B9;
-    border-radius: 4px;
-    padding: 12px 14px;
+  .fiscal-table thead th {
+    background-color: #13293D;
+    color: #FFFFFF;
+    font-weight: 700;
+    padding: 8px 10px;
+    text-align: left;
   }
 
-  .kpi-card.highlight {
+  .fiscal-table thead th.center,
+  .fiscal-table tbody td.center {
+    text-align: center;
+  }
+
+  .fiscal-table thead th.right,
+  .fiscal-table tbody td.right {
+    text-align: right;
+  }
+
+  .fiscal-table tbody tr:nth-child(even) {
     background-color: #EBF1F6;
-    border-top-color: #13293D;
   }
 
-  .kpi-label {
+  .fiscal-table tbody td {
+    padding: 7px 10px;
+    color: #13293D;
+    border-bottom: 1px solid #E2E8F0;
+  }
+
+  .chnf-code {
+    font-family: monospace;
     font-size: 8.5pt;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: #475569;
-    margin-bottom: 4px;
+    letter-spacing: 0.3px;
   }
 
-  .kpi-value {
-    font-size: 13pt;
-    font-weight: 800;
-    color: #13293D;
-  }
-
-  .section-title {
-    font-size: 11pt;
+  .fiscal-table tbody tr.total-row td {
+    background-color: #FFFFFF;
+    border-top: 2px solid #13293D;
+    border-bottom: none;
     font-weight: 700;
-    color: #13293D;
-    margin: 0 0 8px 0;
-    padding-bottom: 4px;
-    border-bottom: 1.5px solid #CBD5E1;
+    padding-top: 10px;
+    font-size: 9.5pt;
   }
 
   .empty-state {
@@ -69,66 +77,43 @@
 {% endblock %}
 
 {% block content %}
-  <div class="meta-cnpj">
-    <strong>CNPJ Apurado:</strong> {{ company_cnpj }}
+  <div class="meta-bar">
+    <div><strong>CNPJ Emitente:</strong> {{ company_cnpj }}</div>
+    <div><strong>Total Geral Saídas:</strong> {{ geral_vNF | brl }} ({{ total_qtd }} docs)</div>
   </div>
 
-  {% if resumo_itens %}
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">Documentos Emitidos</div>
-        <div class="kpi-value">{{ total_qtd }}</div>
-      </div>
-      <div class="kpi-card highlight">
-        <div class="kpi-label">Valor Total Contábil (vNF)</div>
-        <div class="kpi-value">{{ geral_vNF | brl }}</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Total ICMS Destacado</div>
-        <div class="kpi-value">{{ geral_vlrICMS | brl }}</div>
-      </div>
-    </div>
-
-    <h2 class="section-title">Consolidado por Modelo de Documento Fiscal</h2>
-
+  {% if notas %}
     <table class="fiscal-table">
       <thead>
         <tr>
           <th class="center">Mod.</th>
-          <th>Descrição do Documento</th>
-          <th class="center">Qtd.</th>
-          <th class="right">Vlr. Produtos</th>
-          <th class="right">Vlr. Contábil (vNF)</th>
-          <th class="right">Base Cálc. ICMS</th>
-          <th class="right">Valor ICMS</th>
+          <th class="center">Número</th>
+          <th class="center">Emissão</th>
+          <th>Chave de Acesso (chNF)</th>
+          <th class="right">Valor Contábil (vNF)</th>
         </tr>
       </thead>
       <tbody>
-        {% for item in resumo_itens %}
+        {% for nota in notas %}
         <tr>
-          <td class="center"><strong>{{ item.mod }}</strong></td>
-          <td>{{ item.descricao }}</td>
-          <td class="center">{{ item.qtd }}</td>
-          <td class="right">{{ item.vlrProd | brl }}</td>
-          <td class="right">{{ item.vNF | brl }}</td>
-          <td class="right">{{ item.bcICMS | brl }}</td>
-          <td class="right">{{ item.vlrICMS | brl }}</td>
+          <td class="center"><strong>{{ nota.mod }}</strong></td>
+          <td class="center">{{ nota.nNF }}</td>
+          <td class="center">{{ nota.dEmi }}</td>
+          <td class="chnf-code">{{ nota.chNF }}</td>
+          <td class="right">{{ nota.vNF | brl }}</td>
         </tr>
         {% endfor %}
 
         <tr class="total-row">
-          <td colspan="2">TOTAL GERAL</td>
-          <td class="center">{{ total_qtd }}</td>
-          <td class="right">{{ geral_vlrProd | brl }}</td>
+          <td colspan="3">TOTAL GERAL ({{ total_qtd }} DOCUMENTOS)</td>
+          <td></td>
           <td class="right">{{ geral_vNF | brl }}</td>
-          <td class="right">{{ geral_bcICMS | brl }}</td>
-          <td class="right">{{ geral_vlrICMS | brl }}</td>
         </tr>
       </tbody>
     </table>
   {% else %}
     <div class="empty-state">
-      Nenhum dado fiscal consolidado foi encontrado para o CNPJ {{ company_cnpj }} no período informado.
+      Nenhuma nota fiscal de saída foi encontrada para o CNPJ {{ company_cnpj }} no período informado.
     </div>
   {% endif %}
 {% endblock %}

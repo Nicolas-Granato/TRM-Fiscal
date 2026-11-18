@@ -12,7 +12,7 @@ class PurchaseReport(BaseReport):
 
     @property
     def report_filename(self) -> str:
-        return "relatorio_compras.pdf"
+        return "Compras.pdf"
 
     def fetch_data(self, **filters: Any) -> dict[str, Any]:
         company_cnpj = filters.get("company_cnpj")

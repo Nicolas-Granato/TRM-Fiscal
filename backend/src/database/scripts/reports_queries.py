@@ -26,25 +26,14 @@ WHERE Cancelada = TRUE;
 RESUME_REPORT_QUERY = """
 SELECT
     SUBSTRING(chNF, 21, 2) AS mod,
-    COUNT(*) AS qtd,
-    COALESCE(SUM(vlrProd), 0) AS vlrProd,
-    COALESCE(SUM(vNF), 0) AS vNF,
-    COALESCE(SUM(bcICMS), 0) AS bcICMS,
-    COALESCE(SUM(vlrICMS), 0) AS vlrICMS
+    SUBSTRING(chNF, 26, 9) AS nNF,
+    dEmi,
+    chNF,
+    COALESCE(vNF, 0) AS vNF
 FROM Xml
 WHERE cnpjEmit = ?
   AND Cancelada = FALSE
-GROUP BY SUBSTRING(chNF, 21, 2)
-ORDER BY mod;
-"""
-
-TOTAL_RESUME = """
-SELECT
-    COUNT(*) AS qtd_notas,
-    COALESCE(SUM(vNF), 0) AS total_vNF
-FROM Xml
-WHERE cnpjEmit = ?
-  AND Cancelada = FALSE;
+ORDER BY dEmi, mod, nNF;
 """
 
 # --- CFOP_model_report queries ---

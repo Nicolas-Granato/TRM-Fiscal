@@ -12,7 +12,7 @@ class CfopModelReport(BaseReport):
 
     @property
     def report_filename(self) -> str:
-        return "relatorio_cfop_modelo.pdf"
+        return "CFOP e Modelo.pdf"
 
     def fetch_data(self, **filters: Any) -> dict[str, Any]:
         company_cnpj = filters.get("company_cnpj")

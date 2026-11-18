@@ -58,8 +58,7 @@ class XmlParser:
 
     @staticmethod
     def _format_date(date_str: str) -> str:
-        date = re.sub(r"T.*", "", date_str)
-        return date
+        return re.sub(r"T.*", "", date_str).strip()
 
     @staticmethod
     def get_company_info(
@@ -77,23 +76,21 @@ class XmlParser:
 
         folders = "/".join(p.lower() for p in Path(zip_filepath).parts[:-1])
 
-        if "nfce" in folders or "nfe venda" in folders or "nf venda" in folders:
-            target_tag = "emit"
-        elif "nfe compra" in folders:
+        if "nfe compra" in folders or "compra" in folders:
             target_tag = "dest"
         else:
-            return None, None
+            target_tag = "emit"
 
         target_node = XmlParser._find_node(infNFe_node, target_tag)
         if target_node is None:
             return None, None
 
         company_name = XmlParser.get_tag_text(target_node, "xNome") or None
-        company_doc = (
+        raw_doc = (
             XmlParser.get_tag_text(target_node, "CNPJ")
             or XmlParser.get_tag_text(target_node, "CPF")
-            or None
         )
+        company_doc = re.sub(r"\D", "", raw_doc) or None
 
         return company_name, company_doc
 
@@ -118,67 +115,48 @@ class XmlParser:
             if chNF == "":
                 return
 
-            cfop = cls.get_tag_text(ide_node, "CFOP")
+            prod_node = cls._find_node(root, "prod")
+            cfop = cls.get_tag_text(prod_node, "CFOP") or cls.get_tag_text(root, "CFOP")
             if cfop == "":
                 return
 
-            vlrProd = cls.get_tag_text(total_node, "vProd")
-            if vlrProd == "":
-                return
-            vlrProd = cls._to_cents(vlrProd)
+            vlrProd = cls._to_cents(cls.get_tag_text(total_node, "vProd", "0"))
 
-            vNF = cls.get_tag_text(total_node, "vNF")
-            if vNF == "":
+            vNF_raw = cls.get_tag_text(total_node, "vNF")
+            if vNF_raw == "":
                 return
-            vNF = cls._to_cents(vNF)
+            vNF = cls._to_cents(vNF_raw)
 
-            dEmi = cls.get_tag_text(ide_node, "dhEmi")
-            if dEmi == "":
+            dEmi_raw = cls.get_tag_text(ide_node, "dhEmi") or cls.get_tag_text(ide_node, "dEmi")
+            if dEmi_raw == "":
                 return
-            dEmi = cls._format_date(dEmi)
+            dEmi = cls._format_date(dEmi_raw)
 
-            cnpjEmit = cls.get_tag_text(cls._find_node(root, "emit"), "CNPJ")
+            emit_node = cls._find_node(root, "emit")
+            cnpjEmit = re.sub(
+                r"\D",
+                "",
+                cls.get_tag_text(emit_node, "CNPJ") or cls.get_tag_text(emit_node, "CPF"),
+            )
             if cnpjEmit == "":
                 return
 
-            cnpjDest = cls.get_tag_text(cls._find_node(root, "dest"), "CNPJ")
-            if (chNF[20:22] == "65" and cnpjDest == ""):
+            dest_node = cls._find_node(root, "dest")
+            cnpjDest = re.sub(
+                r"\D",
+                "",
+                cls.get_tag_text(dest_node, "CNPJ") or cls.get_tag_text(dest_node, "CPF"),
+            )
+            if chNF[20:22] == "65" and cnpjDest == "":
                 cnpjDest = "--Consumidor--"
 
-            bcICMS = cls.get_tag_text(total_node, "vBC")
-            if bcICMS == "":
-                return
-            bcICMS = cls._to_cents(bcICMS)
-
-            vlrICMS = cls.get_tag_text(total_node, "vICMS")
-            if vlrICMS == "":
-                return
-            vlrICMS = cls._to_cents(vlrICMS)
-
-            bcST = cls.get_tag_text(total_node, "vBCST")
-            if bcST == "":
-                return
-            bcST = cls._to_cents(bcST)
-
-            vlrST = cls.get_tag_text(total_node, "vST")
-            if vlrST == "":
-                return
-            vlrST = cls._to_cents(vlrST)
-
-            vlrIPI = cls.get_tag_text(total_node, "vIPI")
-            if vlrIPI == "":
-                return
-            vlrIPI = cls._to_cents(vlrIPI)
-
-            outras = cls.get_tag_text(total_node, "vOutro")
-            if outras == "":
-                return
-            outras = cls._to_cents(outras)
-
-            desconto = cls.get_tag_text(total_node, "vDesc")
-            if desconto == "":
-                return
-            desconto = cls._to_cents(desconto)
+            bcICMS = cls._to_cents(cls.get_tag_text(total_node, "vBC", "0"))
+            vlrICMS = cls._to_cents(cls.get_tag_text(total_node, "vICMS", "0"))
+            bcST = cls._to_cents(cls.get_tag_text(total_node, "vBCST", "0"))
+            vlrST = cls._to_cents(cls.get_tag_text(total_node, "vST", "0"))
+            vlrIPI = cls._to_cents(cls.get_tag_text(total_node, "vIPI", "0"))
+            outras = cls._to_cents(cls.get_tag_text(total_node, "vOutro", "0"))
+            desconto = cls._to_cents(cls.get_tag_text(total_node, "vDesc", "0"))
 
             xmls_batch.append(
                 (
