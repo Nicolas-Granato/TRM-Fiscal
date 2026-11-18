@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ titulo_relatorio | default('Relatório Fiscal - TRM Sistemas') }}</title>
+  <style>
+    @page {
+      size: A4 portrait;
+      margin: 15mm 18mm 22mm 18mm;
+
+      @bottom-center {
+        content: "TRM Sistemas - Automação Comercial | Juiz de Fora e Região | www.trmsistemas.com.br\A Página " counter(page) " de " counter(pages);
+        white-space: pre-wrap;
+        text-align: center;
+        font-family: 'Segoe UI', Arial, sans-serif;
+        font-size: 9pt;
+        color: #13293D;
+        border-top: 1px solid #CBD5E1;
+        padding-top: 8px;
+        width: 100%;
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Arial, Helvetica, sans-serif;
+      color: #13293D;
+      margin: 0;
+      padding: 0;
+      background-color: #FFFFFF;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      padding-bottom: 12px;
+      border-bottom: 3px solid #2980B9;
+      margin-bottom: 22px;
+    }
+
+    .header-logo img {
+      height: 54px;
+      width: auto;
+      display: block;
+    }
+
+    .header-info {
+      text-align: right;
+      line-height: 1.35;
+    }
+
+    .header-info .title-right {
+      font-size: 10.5pt;
+      font-weight: 700;
+      color: #13293D;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .header-info .subtitle-right {
+      font-size: 9.5pt;
+      font-weight: 600;
+      color: #334155;
+      text-transform: uppercase;
+    }
+
+    .report-heading {
+      margin-bottom: 20px;
+    }
+
+    .report-heading h1 {
+      font-size: 22pt;
+      font-weight: 800;
+      color: #13293D;
+      margin: 0 0 6px 0;
+      letter-spacing: -0.3px;
+    }
+
+    .report-heading .meta-line {
+      font-size: 10.5pt;
+      color: #475569;
+      margin: 0;
+    }
+
+    .report-heading .meta-line strong {
+      color: #1E293B;
+      font-weight: 600;
+    }
+
+    table.fiscal-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 9.5pt;
+    }
+
+    table.fiscal-table thead { display: table-header-group; }
+    table.fiscal-table tr { break-inside: avoid; }
+
+    table.fiscal-table th {
+      background-color: #13293D;
+      color: #FFFFFF;
+      font-weight: 700;
+      padding: 9px 10px;
+      text-align: left;
+    }
+
+    table.fiscal-table td {
+      padding: 7px 10px;
+      color: #1E293B;
+      border-bottom: 1px solid #E2E8F0;
+    }
+
+    table.fiscal-table tbody tr:nth-child(even) { background-color: #EBF1F6; }
+    table.fiscal-table tbody tr:nth-child(odd) { background-color: #FFFFFF; }
+
+    table.fiscal-table tr.total-row td {
+      background-color: #FFFFFF;
+      font-weight: 800;
+      color: #13293D;
+      border-top: 2px solid #CBD5E1;
+      border-bottom: none;
+      padding-top: 10px;
+      font-size: 10pt;
+    }
+
+    .center { text-align: center !important; }
+    .right { text-align: right !important; }
+  </style>
+  {% block extra_styles %}{% endblock %}
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-logo">
+      <img src="assets/logoTRM.png" alt="TRM Sistemas">
+    </div>
+    <div class="header-info">
+      <div class="title-right">{{ categoria_cabecalho | default('RELATÓRIO FISCAL') }}</div>
+      <div class="subtitle-right">TRM SISTEMAS | AUTOMAÇÃO COMERCIAL</div>
+    </div>
+  </header>
+
+  <section class="report-heading">
+    <h1>{{ titulo_relatorio }}</h1>
+    <p class="meta-line">
+      Período de Apuração: <strong>{{ data_inicio }}</strong> a <strong>{{ data_fim }}</strong> &nbsp;|&nbsp;
+      Cliente: <strong>{{ cliente_nome }}</strong>
+    </p>
+  </section>
+
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+
+</body>
+</html>

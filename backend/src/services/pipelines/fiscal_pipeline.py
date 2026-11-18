@@ -55,13 +55,13 @@ class FiscalPipeline:
                         XmlParser.parse_xml(xml_bytes, self._xml_batch)
 
     def _process_xmls(self) -> None:
-        self._process_zip_file(self.zip_file)
+        self._process_zip_files(self.zip_file)
 
         if self.zip_file_2:
-            self._process_zip_file(self.zip_file_2)
+            self._process_zip_files(self.zip_file_2)
 
         if self.zip_file_3:
-            self._process_zip_file(self.zip_file_3)
+            self._process_zip_files(self.zip_file_3)
 
     @property
     def company_name(self) -> Optional[str]:
