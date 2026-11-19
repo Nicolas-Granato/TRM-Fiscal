@@ -6,6 +6,9 @@ from typing import Optional
 
 class XmlParser:
     ACCESS_KEY_LENGTH = 44
+    CANCELED_CSTAT_CODES = {"101", "135", "151"}
+    company_name: Optional[str] = None
+    company_cnpj: Optional[str] = None
 
     @staticmethod
     def _find_node(
@@ -15,7 +18,6 @@ class XmlParser:
         for elem in parent.iter():
             if elem.tag.endswith(tag_name):
                 return elem
-
         return None
 
     @staticmethod
@@ -43,11 +45,28 @@ class XmlParser:
         for elem in root.iter():
             if elem.tag.endswith("infNFe"):
                 key = elem.attrib.get("Id", "").replace("NFe", "").strip()
-
                 if len(key) == cls.ACCESS_KEY_LENGTH and key.isdigit():
                     return key
 
         return ""
+
+    @classmethod
+    def extract_canceled_key_from_nfe(cls, xml_bytes: bytes) -> Optional[str]:
+        """Retorna a chNF se o próprio XML da NF-e/NFC-e estiver com cStat de cancelamento (101, 135, 151)."""
+        try:
+            root = ET.fromstring(xml_bytes)
+        except (ET.ParseError, ValueError, TypeError):
+            return None
+
+        prot_node = cls._find_node(root, "infProt")
+        if prot_node is not None:
+            cstat = cls.get_tag_text(prot_node, "cStat")
+            if cstat in cls.CANCELED_CSTAT_CODES:
+                key = cls._extract_access_key(root)
+                if len(key) == cls.ACCESS_KEY_LENGTH and key.isdigit():
+                    return key
+
+        return None
 
     @staticmethod
     def _to_cents(value: str) -> int:
@@ -58,37 +77,43 @@ class XmlParser:
 
     @staticmethod
     def _format_date(date_str: str) -> str:
-        return re.sub(r"T.*", "", date_str).strip()
+        return re.sub(r"T.*", "", date_str)
 
-    @staticmethod
+    @classmethod
     def get_company_info(
-        xml_bytes: bytes,
+        cls,
+        xml_bytes: bytes | ET.Element,
         zip_filepath: str,
     ) -> tuple[Optional[str], Optional[str]]:
         try:
-            root = ET.fromstring(xml_bytes)
+            root = (
+                xml_bytes
+                if isinstance(xml_bytes, ET.Element)
+                else ET.fromstring(xml_bytes)
+            )
         except (ET.ParseError, ValueError, TypeError):
             return None, None
 
-        infNFe_node = XmlParser._find_node(root, "infNFe")
+        infNFe_node = cls._find_node(root, "infNFe")
         if infNFe_node is None:
             return None, None
 
         folders = "/".join(p.lower() for p in Path(zip_filepath).parts[:-1])
 
-        if "nfe compra" in folders or "compra" in folders:
+        if "nfe compra" in folders:
             target_tag = "dest"
         else:
             target_tag = "emit"
 
-        target_node = XmlParser._find_node(infNFe_node, target_tag)
+        target_node = cls._find_node(infNFe_node, target_tag)
         if target_node is None:
             return None, None
 
-        company_name = XmlParser.get_tag_text(target_node, "xNome") or None
+        company_name = cls.get_tag_text(target_node, "xNome") or None
         raw_doc = (
-            XmlParser.get_tag_text(target_node, "CNPJ")
-            or XmlParser.get_tag_text(target_node, "CPF")
+            cls.get_tag_text(target_node, "CNPJ")
+            or cls.get_tag_text(target_node, "CPF")
+            or ""
         )
         company_doc = re.sub(r"\D", "", raw_doc) or None
 
@@ -115,41 +140,29 @@ class XmlParser:
             if chNF == "":
                 return
 
-            prod_node = cls._find_node(root, "prod")
-            cfop = cls.get_tag_text(prod_node, "CFOP") or cls.get_tag_text(root, "CFOP")
-            if cfop == "":
-                return
+            cfop = cls.get_tag_text(root, "CFOP") or "0000"
 
-            vlrProd = cls._to_cents(cls.get_tag_text(total_node, "vProd", "0"))
-
-            vNF_raw = cls.get_tag_text(total_node, "vNF")
-            if vNF_raw == "":
+            dEmi = cls.get_tag_text(ide_node, "dhEmi") or cls.get_tag_text(ide_node, "dEmi")
+            if dEmi == "":
                 return
-            vNF = cls._to_cents(vNF_raw)
-
-            dEmi_raw = cls.get_tag_text(ide_node, "dhEmi") or cls.get_tag_text(ide_node, "dEmi")
-            if dEmi_raw == "":
-                return
-            dEmi = cls._format_date(dEmi_raw)
+            dEmi = cls._format_date(dEmi)
 
             emit_node = cls._find_node(root, "emit")
-            cnpjEmit = re.sub(
+            dest_node = cls._find_node(root, "dest")
+
+            cnpj_emit = re.sub(
                 r"\D",
                 "",
                 cls.get_tag_text(emit_node, "CNPJ") or cls.get_tag_text(emit_node, "CPF"),
             )
-            if cnpjEmit == "":
-                return
-
-            dest_node = cls._find_node(root, "dest")
-            cnpjDest = re.sub(
+            cnpj_dest = re.sub(
                 r"\D",
                 "",
                 cls.get_tag_text(dest_node, "CNPJ") or cls.get_tag_text(dest_node, "CPF"),
             )
-            if chNF[20:22] == "65" and cnpjDest == "":
-                cnpjDest = "--Consumidor--"
 
+            vlrProd = cls._to_cents(cls.get_tag_text(total_node, "vProd", "0"))
+            vNF = cls._to_cents(cls.get_tag_text(total_node, "vNF", "0"))
             bcICMS = cls._to_cents(cls.get_tag_text(total_node, "vBC", "0"))
             vlrICMS = cls._to_cents(cls.get_tag_text(total_node, "vICMS", "0"))
             bcST = cls._to_cents(cls.get_tag_text(total_node, "vBCST", "0"))
@@ -163,8 +176,8 @@ class XmlParser:
                     chNF,
                     cfop,
                     dEmi,
-                    cnpjEmit,
-                    cnpjDest,
+                    cnpj_emit,
+                    cnpj_dest,
                     vlrProd,
                     vNF,
                     bcICMS,
@@ -176,6 +189,5 @@ class XmlParser:
                     desconto,
                 )
             )
-
         except (ET.ParseError, ValueError, TypeError, AttributeError):
             return

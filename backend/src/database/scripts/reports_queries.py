@@ -9,7 +9,7 @@ SELECT
     COALESCE(vNF, 0) AS vlrTotal
 FROM Xml
 WHERE Cancelada = TRUE
-ORDER BY dEmi, serie, nNF;
+ORDER BY dEmi NULLS LAST, serie, nNF;
 """
 
 TOTAL_CANCELED = """

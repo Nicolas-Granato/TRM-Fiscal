@@ -11,7 +11,7 @@ from backend.src.database.scripts.cancel_xml_query import CANCEL_XML
 
 
 class FiscalPipeline:
-    CANCEL_EVENTS = {"canc"}
+    CANCEL_EVENTS = {"canc", "-can", "_can"}
     CANCEL_EVENT_CODES = {"110111", "110112"}
 
     def __init__(
@@ -42,6 +42,13 @@ class FiscalPipeline:
             ch_nfe = XmlParser.get_tag_text(root, "chNFe")
             if len(ch_nfe) == 44 and ch_nfe.isdigit():
                 return ch_nfe
+
+        for tag in ("cancNFe", "retCancNFe", "infCanc"):
+            if XmlParser._find_node(root, tag) is not None:
+                ch_nfe = XmlParser.get_tag_text(root, "chNFe")
+                if len(ch_nfe) == 44 and ch_nfe.isdigit():
+                    return ch_nfe
+
         return None
 
     def _process_zip_files(self, zip_file: bytes) -> None:
@@ -55,11 +62,16 @@ class FiscalPipeline:
 
                 file_name_lower = file_name.lower()
 
+                if file_name_lower.endswith(".zip"):
+                    with zf.open(file_name) as nested_zip:
+                        self._process_zip_files(nested_zip.read())
+                    continue
+
                 if any(event in file_name_lower for event in self.CANCEL_EVENTS):
                     chNFe = re.findall(r"\d{44}", file_name_lower)
                     if chNFe:
                         self._event_canc.append((chNFe[0],))
-                    continue
+                        continue
 
                 if file_name_lower.endswith(".xml"):
                     with zf.open(file_name) as xml_file:
@@ -77,6 +89,10 @@ class FiscalPipeline:
                                 self._cnpj = doc
 
                         XmlParser.parse_xml(xml_bytes, self._xml_batch)
+
+                        nfe_canceled_key = XmlParser.extract_canceled_key_from_nfe(xml_bytes)
+                        if nfe_canceled_key:
+                            self._event_canc.append((nfe_canceled_key,))
 
     def _process_xmls(self) -> None:
         self._process_zip_files(self.zip_file)
@@ -99,15 +115,17 @@ class FiscalPipeline:
         self._process_xmls()
 
         if len(self._xml_batch):
+            dedup_xmls = list({row[0]: row for row in self._xml_batch}.values())
             executemany_sql(
                 INSERT_XML,
-                self._xml_batch,
+                dedup_xmls,
             )
 
         if len(self._event_canc):
+            unique_cancels = list(dict.fromkeys(self._event_canc))
             executemany_sql(
                 CANCEL_XML,
-                self._event_canc,
+                unique_cancels,
             )
 
         self._xml_batch.clear()
