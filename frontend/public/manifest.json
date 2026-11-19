@@ -1,0 +1,20 @@
+{
+  "name": "TRM Fiscal — Painel de Geração de Arquivos Fiscais",
+  "short_name": "TRM Fiscal",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f7fa",
+  "theme_color": "#13293D",
+  "icons": [
+    {
+      "src": "/iconTRM.jpg",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/iconTRM.jpg",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
