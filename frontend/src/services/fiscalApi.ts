@@ -1,6 +1,6 @@
 import { MAX_ZIP_FILES, triggerBlobDownload } from "../utils/fileUtils";
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8001`;
 const ENDPOINT_URL = `${API_BASE_URL}/api/v1/fiscal/export-reports`;
 
 const FILE_FIELD_KEYS = ["zip_file", "zip_file_2", "zip_file_3"] as const;

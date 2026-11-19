@@ -1,0 +1,30 @@
+services:
+  backend:
+    build: ./backend
+    container_name: trm_fiscal_backend
+    ports:
+      - "8001:8000"
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 128M
+    environment:
+      - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/app
+    volumes:
+      - ./backend:/app/backend
+    command: uvicorn backend.src.main:app --host 0.0.0.0 --port 8000 --workers 1
+    restart: always
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: trm_fiscal_frontend
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+    restart: always

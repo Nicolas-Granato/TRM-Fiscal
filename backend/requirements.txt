@@ -5,7 +5,7 @@ brotli==1.2.1
 cffi==2.1.1
 click==8.5.1
 cssselect2==0.10.1
-duckdb==2.0.0
+duckdb==1.4.3
 fastapi==0.163.2
 fonttools==4.68.0
 h11==0.16.0

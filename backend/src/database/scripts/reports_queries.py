@@ -48,6 +48,7 @@ SELECT
 FROM Xml
 WHERE cnpjEmit = ?
   AND Cancelada = FALSE
+  AND LEFT(CFOP, 1) NOT IN ('1', '2')
 GROUP BY
     SUBSTRING(chNF, 21, 2),
     CFOP
@@ -63,7 +64,8 @@ SELECT
     COALESCE(SUM(vlrICMS), 0) AS geral_vlrICMS
 FROM Xml
 WHERE cnpjEmit = ?
-  AND Cancelada = FALSE;
+  AND Cancelada = FALSE
+  AND LEFT(CFOP, 1) NOT IN ('1', '2');
 """
 
 # --- Purchase report queries ---
