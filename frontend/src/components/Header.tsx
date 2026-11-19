@@ -5,9 +5,9 @@ interface HeaderProps {
 
 export function Header({ title, subtitle }: HeaderProps) {
   return (
-    <header className="card-header">
-      <h1>{title}</h1>
+    <div className="card-header">
+      <h2>{title}</h2>
       <p>{subtitle}</p>
-    </header>
+    </div>
   );
 }

@@ -26,17 +26,22 @@ export function useFiscalUpload() {
 
     setFiles((prev) => {
       const combined = [...prev];
+      let rejectedByLimit = false;
 
       for (const zip of validZips) {
         const alreadyExists = combined.some(
           (item) => item.name === zip.name && item.size === zip.size
         );
-        if (!alreadyExists && combined.length < MAX_ZIP_FILES) {
-          combined.push(zip);
+        if (!alreadyExists) {
+          if (combined.length < MAX_ZIP_FILES) {
+            combined.push(zip);
+          } else {
+            rejectedByLimit = true;
+          }
         }
       }
 
-      if (prev.length + validZips.length > MAX_ZIP_FILES) {
+      if (rejectedByLimit) {
         setErrorMsg(`Limite máximo de ${MAX_ZIP_FILES} arquivos .zip atingido.`);
       }
 

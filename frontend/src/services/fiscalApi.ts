@@ -1,7 +1,7 @@
 import { MAX_ZIP_FILES, triggerBlobDownload } from "../utils/fileUtils";
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-const EXPORT_ENDPOINT = `${API_BASE_URL}/api/v1/fiscal/export-reports`;
+const ENDPOINT_URL = `${API_BASE_URL}/api/v1/fiscal/export-reports`;
 
 const FILE_FIELD_KEYS = ["zip_file", "zip_file_2", "zip_file_3"] as const;
 
@@ -22,7 +22,7 @@ export async function generateFiscalReports(files: File[]): Promise<string> {
     }
   });
 
-  const response = await fetch(EXPORT_ENDPOINT, {
+  const response = await fetch(ENDPOINT_URL, {
     method: "POST",
     body: formData,
   });
@@ -30,13 +30,18 @@ export async function generateFiscalReports(files: File[]): Promise<string> {
   if (!response.ok) {
     const errorData = await response.json().catch(() => null);
     throw new Error(
-      errorData?.detail || `Erro ao gerar relatórios (Status ${response.status}).`
+      errorData?.detail || `Erro ${response.status}: ${response.statusText}`
     );
   }
 
   const disposition = response.headers.get("Content-Disposition");
-  const filenameMatch = disposition?.match(/filename="?([^"]+)"?/);
-  const filename = filenameMatch?.[1] || "relatorios_fiscais.zip";
+  let filename = "relatorios_fiscais.zip";
+  if (disposition) {
+    const match = disposition.match(/filename="?([^"]+)"?/);
+    if (match?.[1]) {
+      filename = match[1];
+    }
+  }
 
   const blob = await response.blob();
   triggerBlobDownload(blob, filename);

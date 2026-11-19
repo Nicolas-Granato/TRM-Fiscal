@@ -12,6 +12,7 @@ export function GenerateButton({ isLoading, disabled, onClick }: GenerateButtonP
       onClick={onClick}
       disabled={disabled || isLoading}
     >
+      <span className="btn-icon">{isLoading ? "⏳" : "▶"}</span>
       {isLoading ? "Processando XMLs e Gerando PDFs..." : "Gerar Relatórios"}
     </button>
   );
