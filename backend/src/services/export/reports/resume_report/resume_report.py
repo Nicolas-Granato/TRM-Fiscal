@@ -41,12 +41,14 @@ class ResumeReport(BaseReport):
                 "vNF": v_nf,
             })
 
+        start_date, end_date = self._get_date(self.session_manager.execute_sql, filters)
+
         return {
             "titulo_relatorio": "Relatório de Resumo de Saídas",
             "cliente_nome": filters.get("cliente_nome", "Não informado"),
             "company_cnpj": company_cnpj,
-            "data_inicio": filters.get("data_inicio", "-"),
-            "data_fim": filters.get("data_fim", "-"),
+            "data_inicio": start_date or "-",
+            "data_fim": end_date or "-",
             "notas": notas,
             "total_qtd": len(notas),
             "geral_vNF": geral_v_nf,

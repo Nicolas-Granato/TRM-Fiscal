@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any
+from typing import Any, Callable
+from warnings import filters
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 
@@ -43,6 +44,21 @@ class BaseReport(ABC):
             string=html_rendered,
             base_url=str(self.REPORTS_DIR),
         ).write_pdf()
+
+    @staticmethod
+    def _get_date(execute_sql: Callable, filters: Any) -> tuple[str | None, str | None]:
+        start_date = filters.get("data_inicio")
+        end_date = filters.get("data_fim")
+
+        if not start_date or not end_date:
+            period_row = execute_sql(
+                "SELECT MIN(dEmi), MAX(dEmi) FROM Xml WHERE dEmi IS NOT NULL;"
+            )
+            if period_row and period_row[0][0]:
+                start_date = start_date or period_row[0][0].strftime("%d/%m/%Y")
+                end_date = end_date or period_row[0][1].strftime("%d/%m/%Y")
+
+        return start_date, end_date
 
     @staticmethod
     def _format_brl(value: float | int | None) -> str:

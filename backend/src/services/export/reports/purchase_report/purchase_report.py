@@ -42,12 +42,14 @@ class PurchaseReport(BaseReport):
                 "vNF": v_nf,
             })
 
+        start_date, end_date = self._get_date(self.session_manager.execute_sql, filters)
+
         return {
             "titulo_relatorio": "Relatório de Notas Fiscais de Compras",
             "cliente_nome": filters.get("cliente_nome", "Não informado"),
             "company_cnpj": company_cnpj,
-            "data_inicio": filters.get("data_inicio", "-"),
-            "data_fim": filters.get("data_fim", "-"),
+            "data_inicio": start_date or "-",
+            "data_fim": end_date or "-",
             "notas": notas,
             "qtd_notas": len(notas),
             "total_vlrProd": total_vlr_prod,
