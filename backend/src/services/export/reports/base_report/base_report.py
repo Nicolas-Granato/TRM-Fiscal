@@ -1,7 +1,6 @@
 from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import Any, Callable
-from warnings import filters
 from jinja2 import Environment, FileSystemLoader
 from weasyprint import HTML
 
@@ -16,6 +15,7 @@ class BaseReport(ABC):
             autoescape=True,
         )
         self.env.filters["brl"] = self._format_brl
+        self.env.filters["strip_zeros"] = self._strip_leading_zeros
 
     @property
     @abstractmethod
@@ -67,3 +67,11 @@ class BaseReport(ABC):
             return "R$ 0,00"
         formatted = f"{value:,.2f}".replace(",", "X").replace(".", ",").replace("X", ".")
         return f"R$ {formatted}"
+
+    @staticmethod
+    def _strip_leading_zeros(value: str | int | None) -> str:
+        """Remove zeros à esquerda (ex: '000017509' -> '17509', '000' -> '0')."""
+        if value is None:
+            return "-"
+        cleaned = str(value).strip().lstrip("0")
+        return cleaned if cleaned else "0"
