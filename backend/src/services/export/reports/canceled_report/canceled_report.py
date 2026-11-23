@@ -27,10 +27,12 @@ class CanceledReport(BaseReport):
             total_vlr_prod += vlr_prod
             total_vlr_total += vlr_total
 
+            nNF = self._strip_leading_zeros(row[2])
+
             notas.append({
                 "mod": row[0],
                 "serie": row[1],
-                "nNF": row[2],
+                "nNF": nNF,
                 "vlrProd": vlr_prod,
                 "vlrTotal": vlr_total,
             })

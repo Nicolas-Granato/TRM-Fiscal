@@ -2,6 +2,10 @@
 
 {% block extra_styles %}
 <style>
+  @page {
+    size: A4 landscape;
+  }
+  
   .meta-bar {
     display: flex;
     justify-content: space-between;
@@ -86,11 +90,11 @@
     <table class="fiscal-table">
       <thead>
         <tr>
-          <th class="center">Mod.</th>
+          <th class="center">Modelo</th>
           <th class="center">Número</th>
           <th class="center">Emissão</th>
-          <th>Chave de Acesso (chNF)</th>
-          <th class="right">Valor Contábil (vNF)</th>
+          <th>Chave de Acesso</th>
+          <th class="right">Valor Contábil</th>
         </tr>
       </thead>
       <tbody>

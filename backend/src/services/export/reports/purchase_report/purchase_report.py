@@ -32,10 +32,12 @@ class PurchaseReport(BaseReport):
             total_vlr_prod += vlr_prod
             total_v_nf += v_nf
 
+            nNF = self._strip_leading_zeros(row[2])
+
             notas.append({
                 "mod": row[0],
                 "serie": row[1],
-                "nNF": row[2],
+                "nNF": nNF,
                 "dEmi": row[3].strftime("%d/%m/%Y") if hasattr(row[3], "strftime") else (row[3] or "-"),
                 "chNF": row[4],
                 "vlrProd": vlr_prod,

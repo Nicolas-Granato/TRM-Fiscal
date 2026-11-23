@@ -33,9 +33,11 @@ class ResumeReport(BaseReport):
 
             geral_v_nf += v_nf
 
+            nNF = self._strip_leading_zeros(n_nf)
+
             notas.append({
                 "mod": mod,
-                "nNF": n_nf,
+                "nNF": nNF,
                 "dEmi": d_emi,
                 "chNF": ch_nf,
                 "vNF": v_nf,
